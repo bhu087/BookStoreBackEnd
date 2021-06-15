@@ -9,5 +9,6 @@ namespace BookStoreRepository.Admin
     public interface IAdminRepo
     {
         Task<string> Login(Login login);
+        Task<Book> AddNewBook(Book book);
     }
 }

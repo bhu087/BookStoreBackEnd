@@ -9,5 +9,6 @@ namespace BookStoreManager.Admin
     public interface IAdminManager
     {
         Task<string> Login(Login login);
+        Task<Book> AddNewBook(Book book);
     }
 }

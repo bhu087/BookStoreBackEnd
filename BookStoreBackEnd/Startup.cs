@@ -34,16 +34,22 @@ namespace BookStoreBackEnd
             services.AddTransient<IAdminManager, AdminManager>();
             services.AddTransient<IAdminRepo, AdminRepo>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddCors(o => o.AddPolicy("CorsPolicy", builder => {
+                builder
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+
+            }));
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "Fundoo App", Version = "v1", Description = "Fundoo Note Application" });
+                c.SwaggerDoc("v1", new Info { Title = "Book Store App", Version = "v1", Description = "Book Store Application" });
                 //   c.OperationFilter<FileUploadedOperation>(); ////Register File Upload Operation Filter
                 //c.DescribeAllEnumsAsStrings();
                 c.AddSecurityDefinition("Bearer", new ApiKeyScheme
                 {
                     Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
-                    Name = "authorization",
+                    Name = "Authorization",
                     In = "header",
                     Type = "apiKey"
                 });
@@ -69,12 +75,10 @@ namespace BookStoreBackEnd
                     IssuerSigningKey = new SymmetricSecurityKey(key),
                     ValidateIssuer = false,
                     ValidateAudience = false,
-                    //ClockSkew = TimeSpan.Zero
                 };
             });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
@@ -90,7 +94,12 @@ namespace BookStoreBackEnd
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Book Store Api");
             });
+            app.UseCors(x => x.AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .SetIsOriginAllowed(origin => true) // allow any origin
+                  .AllowCredentials());
             app.UseHttpsRedirection();
+            app.UseAuthentication();
             app.UseMvc();
         }
     }

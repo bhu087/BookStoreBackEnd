@@ -11,7 +11,7 @@ namespace BookStoreBackEnd.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles ="Admin")]
+    //[Authorize(Roles ="Admin")]
     public class AdminController : ControllerBase
     {
         private readonly IAdminManager manager;
@@ -40,6 +40,24 @@ namespace BookStoreBackEnd.Controllers
                 return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
             }
         }
+        [HttpPost]
+        [Route("AddNewBook")]
+        public ActionResult AddNewBook(Book book)
+        {
+            try
+            {
+                Task<Book> response = this.manager.AddNewBook(book);
+                if (response.Result != null)
+                {
+                    return this.Ok(new { Status = true, Message = " Book Added Successfully", Data = response.Result });
+                }
 
+                return this.BadRequest(new { Status = false, Message = "Book Not Added", Data = response.Result });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
+            }
+        }
     }
 }

@@ -15,6 +15,12 @@ namespace BookStoreManager.Admin
         {
             this.adminRepo = repo;
         }
+
+        public Task<Book> AddNewBook(Book book)
+        {
+            return this.adminRepo.AddNewBook(book);
+        }
+
         public Task<string> Login(Login login)
         {
             return this.adminRepo.Login(login);

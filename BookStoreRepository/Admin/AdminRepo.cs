@@ -55,25 +55,24 @@ namespace BookStoreRepository.Admin
             }
         }
 
-        public async Task<string> AddNewNote(Login login)
+        public async Task<Book> AddNewBook(Book book)
         {
             string conn = config["ConnectionString"];
             SqlConnection connection = new SqlConnection(conn);
             try
             {
-                using (SqlCommand command = new SqlCommand("spAdminLogin", connection))
+                using (SqlCommand command = new SqlCommand("spAddNewBook", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("UserName", login.Email);
-                    command.Parameters.AddWithValue("Password", login.Password);
+                    command.Parameters.AddWithValue("BookName", book.BookName);
+                    command.Parameters.AddWithValue("Description", book.Description);
+                    command.Parameters.AddWithValue("Quantity  ", book.Quantity);
                     connection.Open();
-                    //SqlDataReader reader = command.ExecuteReader();
-                    int res = (Int32)command.ExecuteScalar();
-                    if (res == 1)
+                    int reader = command.ExecuteNonQuery();
+                    if (reader == 1)
                     {
-                        string jwt = this.GenerateJWTtokens(login.Email);
                         connection.Close();
-                        return await Task.Run(() => jwt);
+                        return await Task.Run(() => book);
                     }
                     connection.Close();
                     return null;
