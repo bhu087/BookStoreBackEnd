@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BookStoreManager.Admin;
+using BookStoreModel;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,38 +11,35 @@ namespace BookStoreBackEnd.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles ="Admin")]
     public class AdminController : ControllerBase
     {
-        // GET api/values
-        [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+        private readonly IAdminManager manager;
+
+        public AdminController(IAdminManager adminManager)
         {
-            return new string[] { "value1", "value2" };
+            this.manager = adminManager;
         }
 
-        // GET api/values/5
-        [HttpGet("{id}")]
-        public ActionResult<string> Get(int id)
-        {
-            return "value";
-        }
-
-        // POST api/values
+        [AllowAnonymous]
         [HttpPost]
-        public void Post([FromBody] string value)
+        public ActionResult Login(Login login)
         {
+            try
+            {
+                Task<string> response = this.manager.Login(login);
+                if (response.Result != null)
+                {
+                    return this.Ok(new { Status = true, Message = "Logged In Successfully", Data = response.Result });
+                }
+
+                return this.BadRequest(new { Status = false, Message = "Not Logged In", Data = response.Result });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
+            }
         }
 
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
     }
 }
