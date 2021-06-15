@@ -10,5 +10,6 @@ namespace BookStoreManager.Admin
     {
         Task<string> Login(Login login);
         Task<Book> AddNewBook(Book book);
+        Task<Book> UpdateBook(Book book);
     }
 }

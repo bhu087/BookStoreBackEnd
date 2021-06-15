@@ -59,5 +59,24 @@ namespace BookStoreBackEnd.Controllers
                 return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
             }
         }
+
+        [HttpPut]
+        public ActionResult UpdateBook(Book book)
+        {
+            try
+            {
+                Task<Book> response = this.manager.UpdateBook(book);
+                if (response.Result != null)
+                {
+                    return this.Ok(new { Status = true, Message = " Book updated Successfully", Data = response.Result });
+                }
+
+                return this.BadRequest(new { Status = false, Message = "Book updated Added", Data = response.Result });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
+            }
+        }
     }
 }

@@ -25,5 +25,17 @@ namespace BookStoreManager.Admin
         {
             return this.adminRepo.Login(login);
         }
+
+        public Task<Book> UpdateBook(Book book)
+        {
+            try
+            {
+                return this.adminRepo.UpdateBook(book);
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
     }
 }

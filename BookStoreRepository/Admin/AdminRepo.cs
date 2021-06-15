@@ -88,6 +88,41 @@ namespace BookStoreRepository.Admin
             }
         }
 
+        public async Task<Book> UpdateBook(Book book)
+        {
+            string conn = config["ConnectionString"];
+            SqlConnection connection = new SqlConnection(conn);
+            try
+            {
+                using (SqlCommand command = new SqlCommand("spUpdateBook", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("BookID", book.BookID);
+                    command.Parameters.AddWithValue("BookName", book.BookName);
+                    command.Parameters.AddWithValue("Description", book.Description);
+                    command.Parameters.AddWithValue("Quantity  ", book.Quantity);
+                    connection.Open();
+                    int reader = command.ExecuteNonQuery();
+                    if (reader == 1)
+                    {
+                        connection.Close();
+                        return await Task.Run(() => book);
+                    }
+                    connection.Close();
+                    return null;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception();
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+
         public string GenerateJWTtokens(string adminEmail)
         {
             string key = this.config["Jwt:Key"];
