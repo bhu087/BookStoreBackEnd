@@ -78,5 +78,44 @@ namespace BookStoreBackEnd.Controllers
                 return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
             }
         }
+
+        [HttpDelete]
+        public ActionResult DeleteteBook(int bookID)
+        {
+            try
+            {
+                Task<string> response = this.manager.DeleteBook(bookID);
+                if (response.Result != null)
+                {
+                    return this.Ok(new { Status = true, Message = " Book deleted Successfully", Data = response.Result });
+                }
+
+                return this.BadRequest(new { Status = false, Message = "Book dletetion failed", Data = response.Result });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
+            }
+        }
+
+        [HttpGet]
+        public ActionResult GetAllBooks()
+        {
+            try
+            {
+                Task<IEnumerable<Book>> response = this.manager.GetAllBooks();
+                if (response.Result != null)
+                {
+                    return this.Ok(new { Status = true, Message = "All Book", Data = response.Result });
+                }
+
+                return this.BadRequest(new { Status = false, Message = "No books available", Data = response.Result });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
+            }
+        }
+
     }
 }

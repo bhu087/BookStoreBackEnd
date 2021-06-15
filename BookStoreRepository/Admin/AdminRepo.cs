@@ -122,6 +122,74 @@ namespace BookStoreRepository.Admin
             }
         }
 
+        public async Task<string> DeleteBook(int bookID)
+        {
+            string conn = config["ConnectionString"];
+            SqlConnection connection = new SqlConnection(conn);
+            try
+            {
+                using (SqlCommand command = new SqlCommand("spDeleteBook", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("BookID", bookID);
+                    connection.Open();
+                    int reader = command.ExecuteNonQuery();
+                    if (reader == 1)
+                    {
+                        connection.Close();
+                        return await Task.Run(() => "Deleted");
+                    }
+                    connection.Close();
+                    return null;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception();
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+
+        public async Task<IEnumerable<Book>> GetAllBooks()
+        {
+            string conn = config["ConnectionString"];
+            List<Book> bookList = new List<Book>();
+            SqlConnection connection = new SqlConnection(conn);
+            try
+            {
+                using (SqlCommand command = new SqlCommand("spGetAllBooks", connection))
+                {
+                    Book book = new Book();
+                    command.CommandType = CommandType.StoredProcedure;
+                    connection.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        book.BookID = (Int32)reader["BookID"];
+                        book.BookName = reader["BookName"].ToString();
+                        book.Description = reader["BookDescription"].ToString();
+                        book.Quantity = (Int32)reader["Quantity"];
+                        bookList.Add(book);
+                    }
+                    connection.Close();
+                    return await Task.Run(() => bookList);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception();
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+
 
         public string GenerateJWTtokens(string adminEmail)
         {

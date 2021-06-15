@@ -21,6 +21,30 @@ namespace BookStoreManager.Admin
             return this.adminRepo.AddNewBook(book);
         }
 
+        public Task<string> DeleteBook(int bookID)
+        {
+            try
+            {
+                return this.adminRepo.DeleteBook(bookID);
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
+        public Task<IEnumerable<Book>> GetAllBooks()
+        {
+            try
+            {
+                return this.adminRepo.GetAllBooks();
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
         public Task<string> Login(Login login)
         {
             return this.adminRepo.Login(login);
