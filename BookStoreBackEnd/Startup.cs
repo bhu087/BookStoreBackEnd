@@ -28,24 +28,25 @@ namespace BookStoreBackEnd
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddTransient<IAdminManager, AdminManager>();
             services.AddTransient<IAdminRepo, AdminRepo>();
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-            services.AddCors(o => o.AddPolicy("CorsPolicy", builder => {
+            services.AddCors(o => o.AddPolicy("CorsPolicy", builder =>
+            {
                 builder
                 .AllowAnyMethod()
+                .AllowAnyHeader()
                 .AllowAnyHeader();
 
             }));
+            services.AddSession();
+            services.AddDistributedMemoryCache();
 
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "Book Store App", Version = "v1", Description = "Book Store Application" });
-                //   c.OperationFilter<FileUploadedOperation>(); ////Register File Upload Operation Filter
-                //c.DescribeAllEnumsAsStrings();
+                c.SwaggerDoc("v1", new Info { Title = "Book Store App", Version = "v1", Description = "Book store Application" });
                 c.AddSecurityDefinition("Bearer", new ApiKeyScheme
                 {
                     Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
@@ -89,6 +90,8 @@ namespace BookStoreBackEnd
             {
                 app.UseHsts();
             }
+
+            app.UseSession();
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
@@ -97,7 +100,8 @@ namespace BookStoreBackEnd
             app.UseCors(x => x.AllowAnyMethod()
                   .AllowAnyHeader()
                   .SetIsOriginAllowed(origin => true) // allow any origin
-                  .AllowCredentials());
+                  .AllowCredentials()
+                  .AllowAnyHeader());
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseMvc();
