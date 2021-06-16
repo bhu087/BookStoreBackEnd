@@ -25,10 +25,10 @@ namespace BookStoreRepository.User
             SqlConnection connection = new SqlConnection(conn);
             try
             {
-                using (SqlCommand command = new SqlCommand("spUserLogin", connection))
+                using (SqlCommand command = new SqlCommand("spLogin", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("UserName", login.Email.ToLower());
+                    command.Parameters.AddWithValue("Email", login.Email.ToLower());
                     command.Parameters.AddWithValue("Password", login.Password);
                     connection.Open();
                     int res = (Int32)command.ExecuteScalar();

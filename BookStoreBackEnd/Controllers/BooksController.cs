@@ -40,47 +40,47 @@ namespace BookStoreBackEnd.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
-        [HttpPut]
-        [Route("updateBook")]
-        public ActionResult UpdateBook(Book book)
-        {
-            try
-            {
-                Task<Book> response = this.manager.UpdateBook(book);
-                if (response.Result != null)
-                {
-                    return this.Ok(new { Status = true, Message = " Book updated Successfully", Data = response.Result });
-                }
+        //[Authorize(Roles = "Admin")]
+        //[HttpPut]
+        //[Route("updateBook")]
+        //public ActionResult UpdateBook(Book book)
+        //{
+        //    try
+        //    {
+        //        Task<Book> response = this.manager.UpdateBook(book);
+        //        if (response.Result != null)
+        //        {
+        //            return this.Ok(new { Status = true, Message = " Book updated Successfully", Data = response.Result });
+        //        }
 
-                return this.BadRequest(new { Status = false, Message = "Book updated", Data = response.Result });
-            }
-            catch (Exception e)
-            {
-                return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
-            }
-        }
+        //        return this.BadRequest(new { Status = false, Message = "Book updated", Data = response.Result });
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
+        //    }
+        //}
 
-        [Authorize(Roles = "Admin")]
-        [HttpDelete]
-        [Route("deleteBook")]
-        public ActionResult DeleteteBook(int bookID)
-        {
-            try
-            {
-                Task<string> response = this.manager.DeleteBook(bookID);
-                if (response.Result != null)
-                {
-                    return this.Ok(new { Status = true, Message = " Book deleted Successfully", Data = response.Result });
-                }
+        //[Authorize(Roles = "Admin")]
+        //[HttpDelete]
+        //[Route("deleteBook")]
+        //public ActionResult DeleteteBook(int bookID)
+        //{
+        //    try
+        //    {
+        //        Task<string> response = this.manager.DeleteBook(bookID);
+        //        if (response.Result != null)
+        //        {
+        //            return this.Ok(new { Status = true, Message = " Book deleted Successfully", Data = response.Result });
+        //        }
 
-                return this.BadRequest(new { Status = false, Message = "Book dletetion failed", Data = response.Result });
-            }
-            catch (Exception e)
-            {
-                return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
-            }
-        }
+        //        return this.BadRequest(new { Status = false, Message = "Book dletetion failed", Data = response.Result });
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
+        //    }
+        //}
 
         [AllowAnonymous]
         [HttpGet]

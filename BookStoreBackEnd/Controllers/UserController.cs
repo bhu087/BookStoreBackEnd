@@ -38,5 +38,24 @@ namespace BookStoreBackEnd.Controllers
                 return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
             }
         }
+
+        [HttpPost]
+        public ActionResult Register()
+        {
+            try
+            {
+                Task<string> response = null;
+                if (response.Result != null)
+                {
+                    return this.Ok(new { Status = true, Message = "User Registered Successfully", Data = response.Result });
+                }
+
+                return this.BadRequest(new { Status = false, Message = "User Not Registered", Data = response.Result });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
+            }
+        }
     }
 }

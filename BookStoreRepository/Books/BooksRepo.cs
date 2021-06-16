@@ -25,9 +25,12 @@ namespace BookStoreRepository.Books
                 using (SqlCommand command = new SqlCommand("spAddNewBook", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("BookName", book.BookName);
+                    command.Parameters.AddWithValue("Name", book.BookName);
+                    command.Parameters.AddWithValue("Author", book.Author);
+                    command.Parameters.AddWithValue("Price", book.Price);
                     command.Parameters.AddWithValue("Description", book.Description);
                     command.Parameters.AddWithValue("Quantity  ", book.Quantity);
+                    command.Parameters.AddWithValue("Image", book.Image);
                     connection.Open();
                     int reader = command.ExecuteNonQuery();
                     if (reader == 1)
