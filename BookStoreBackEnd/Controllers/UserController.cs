@@ -11,7 +11,6 @@ namespace BookStoreBackEnd.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "User")]
     public class UserController : Controller
     {
         private readonly IUserManager manager;
@@ -20,8 +19,8 @@ namespace BookStoreBackEnd.Controllers
             this.manager = userManager;
         }
 
-        [AllowAnonymous]
         [HttpPost]
+        [Route("userLogin")]
         public ActionResult Login(Login login)
         {
             try

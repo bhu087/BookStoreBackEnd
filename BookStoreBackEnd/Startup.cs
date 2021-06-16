@@ -1,6 +1,8 @@
 ﻿using BookStoreManager.Admin;
+using BookStoreManager.Books;
 using BookStoreManager.User;
 using BookStoreRepository.Admin;
+using BookStoreRepository.Books;
 using BookStoreRepository.User;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -36,16 +38,17 @@ namespace BookStoreBackEnd
             services.AddTransient<IAdminRepo, AdminRepo>();
             services.AddTransient<IUserManager, UserManager>();
             services.AddTransient<IUserRepo, UserRepo>();
+            services.AddTransient<IBooksManager, BooksManager>();
+            services.AddTransient<IBooksRepo, BooksRepo>();
             services.AddCors(o => o.AddPolicy("CorsPolicy", builder =>
             {
                 builder
                 .AllowAnyMethod()
-                .AllowAnyHeader()
                 .AllowAnyHeader();
 
             }));
-            services.AddSession();
-            services.AddDistributedMemoryCache();
+            //services.AddSession();
+            //services.AddDistributedMemoryCache();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddSwaggerGen(c =>
@@ -95,7 +98,7 @@ namespace BookStoreBackEnd
                 app.UseHsts();
             }
 
-            app.UseSession();
+            //app.UseSession();
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
