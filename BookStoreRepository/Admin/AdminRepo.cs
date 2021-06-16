@@ -163,12 +163,12 @@ namespace BookStoreRepository.Admin
             {
                 using (SqlCommand command = new SqlCommand("spGetAllBooks", connection))
                 {
-                    Book book = new Book();
                     command.CommandType = CommandType.StoredProcedure;
                     connection.Open();
                     SqlDataReader reader = command.ExecuteReader();
                     while (reader.Read())
                     {
+                        Book book = new Book();
                         book.BookID = (Int32)reader["BookID"];
                         book.BookName = reader["BookName"].ToString();
                         book.Description = reader["BookDescription"].ToString();

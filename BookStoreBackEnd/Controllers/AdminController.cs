@@ -11,7 +11,7 @@ namespace BookStoreBackEnd.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles ="Admin")]
+    [Authorize(Roles = "Admin")]
     public class AdminController : ControllerBase
     {
         private readonly IAdminManager manager;
@@ -23,6 +23,7 @@ namespace BookStoreBackEnd.Controllers
 
         [AllowAnonymous]
         [HttpPost]
+        [Route("login")]
         public ActionResult Login(Login login)
         {
             try
@@ -41,7 +42,6 @@ namespace BookStoreBackEnd.Controllers
             }
         }
         [HttpPost]
-        [Route("AddNewBook")]
         public ActionResult AddNewBook(Book book)
         {
             try
