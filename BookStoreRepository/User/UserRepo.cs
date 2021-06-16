@@ -52,6 +52,42 @@ namespace BookStoreRepository.User
             }
         }
 
+        public async Task<UserDetails> AddUser(UserDetails user)
+        {
+            string conn = config["ConnectionString"];
+            SqlConnection connection = new SqlConnection(conn);
+            try
+            {
+                using (SqlCommand command = new SqlCommand("spAddUser", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("Name", user.Name);
+                    command.Parameters.AddWithValue("Email", user.Email);
+                    command.Parameters.AddWithValue("Mobile", user.Mobile);
+                    command.Parameters.AddWithValue("Password", user.Password);
+                    command.Parameters.AddWithValue("Address", user.Address);
+                    command.Parameters.AddWithValue("HolderState", 1);
+                    connection.Open();
+                    int res = (Int32)command.ExecuteScalar();
+                    if (res == 1)
+                    {
+                        connection.Close();
+                        return await Task.Run(() => user);
+                    }
+                    connection.Close();
+                    return null;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception();
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
         public string GenerateJWTtokens(string auserEmail)
         {
             string key = this.config["Jwt:Key"];

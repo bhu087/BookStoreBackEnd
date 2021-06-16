@@ -9,5 +9,6 @@ namespace BookStoreRepository.User
     public interface IUserRepo
     {
         Task<string> Login(Login login);
+        Task<UserDetails> AddUser(UserDetails user);
     }
 }

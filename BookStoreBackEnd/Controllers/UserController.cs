@@ -40,11 +40,12 @@ namespace BookStoreBackEnd.Controllers
         }
 
         [HttpPost]
-        public ActionResult Register()
+        [Route("register")]
+        public ActionResult Register(UserDetails user)
         {
             try
             {
-                Task<string> response = null;
+                Task<UserDetails> response = this.manager.AddUser(user);
                 if (response.Result != null)
                 {
                     return this.Ok(new { Status = true, Message = "User Registered Successfully", Data = response.Result });

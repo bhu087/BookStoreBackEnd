@@ -14,6 +14,19 @@ namespace BookStoreManager.User
         {
             this.repo = userRepo;
         }
+
+        public Task<UserDetails> AddUser(UserDetails user)
+        {
+            try 
+            {
+                return this.repo.AddUser(user);
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
         public Task<string> Login(Login login)
         {
             try
