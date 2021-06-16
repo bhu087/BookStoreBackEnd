@@ -20,6 +20,30 @@ namespace BookStoreManager.Books
             return this.repo.AddNewBook(book);
         }
 
+        public Task<int> AddToCart(int AccountID, int BookID)
+        {
+            try
+            {
+                return this.repo.AddToCart(AccountID, BookID);
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
+        public Task<int> AddToWishList(int AccountID, int BookID)
+        {
+            try
+            {
+                return this.repo.AddToWishList(AccountID, BookID);
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
         public Task<string> DeleteBook(int bookID)
         {
             try

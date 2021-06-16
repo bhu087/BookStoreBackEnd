@@ -152,5 +152,70 @@ namespace BookStoreRepository.Books
                 connection.Close();
             }
         }
+
+        public async Task<int> AddToCart(int AccountID, int BookID)
+        {
+            string conn = config["ConnectionString"];
+            SqlConnection connection = new SqlConnection(conn);
+            try
+            {
+                using (SqlCommand command = new SqlCommand("spAddToCart", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("AccountID", AccountID);
+                    command.Parameters.AddWithValue("BookID", BookID);
+                    connection.Open();
+                    int reader = await Task.Run(() => command.ExecuteNonQuery());
+                    if (reader == 1)
+                    {
+                        connection.Close();
+                        return reader;
+                    }
+                    connection.Close();
+                    return reader;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception();
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        public async Task<int> AddToWishList(int AccountID, int BookID)
+        {
+            string conn = config["ConnectionString"];
+            SqlConnection connection = new SqlConnection(conn);
+            try
+            {
+                using (SqlCommand command = new SqlCommand("spAddToWishList", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("AccountID", AccountID);
+                    command.Parameters.AddWithValue("BookID", BookID);
+                    connection.Open();
+                    int reader = await Task.Run(() => command.ExecuteNonQuery());
+                    if (reader == 1)
+                    {
+                        connection.Close();
+                        return reader;
+                    }
+                    connection.Close();
+                    return reader;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception();
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
     }
 }

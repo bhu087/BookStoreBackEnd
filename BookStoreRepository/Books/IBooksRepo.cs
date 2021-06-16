@@ -12,5 +12,7 @@ namespace BookStoreRepository.Books
         Task<Book> UpdateBook(Book book);
         Task<string> DeleteBook(int bookID);
         Task<IEnumerable<Book>> GetAllBooks();
+        Task<int> AddToCart(int AccountID, int BookID);
+        Task<int> AddToWishList(int AccountID, int BookID);
     }
 }

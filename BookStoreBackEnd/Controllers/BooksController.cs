@@ -102,5 +102,48 @@ namespace BookStoreBackEnd.Controllers
                 return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
             }
         }
+
+        [Authorize(Roles = "User")]
+        [HttpGet]
+        [Route("addToCart")]
+        public ActionResult AddToCart(int AccountID, int BookID)
+        {
+            try
+            {
+                Task<int> response = this.manager.AddToCart(AccountID, BookID);
+                if (response.Result == 1)
+                {
+                    return this.Ok(new { Status = true, Message = "Book added to Cart", Data = response.Result });
+                }
+
+                return this.BadRequest(new { Status = false, Message = "Book not added to cart", Data = response.Result });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
+            }
+        }
+
+        [Authorize(Roles = "User")]
+        [HttpGet]
+        [Route("addToWishList")]
+        public ActionResult AddToWishList(int AccountID, int BookID)
+        {
+            try
+            {
+                Task<int> response = this.manager.AddToWishList(AccountID, BookID);
+                if (response.Result == 1)
+                {
+                    return this.Ok(new { Status = true, Message = "Book added to wish List", Data = response.Result });
+                }
+
+                return this.BadRequest(new { Status = false, Message = "Book not added to wish list", Data = response.Result });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
+            }
+        }
+
     }
 }
