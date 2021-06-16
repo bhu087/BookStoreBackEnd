@@ -30,7 +30,7 @@ namespace BookStoreRepository.Admin
                 using (SqlCommand command = new SqlCommand("spAdminLogin", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("UserName", login.Email);
+                    command.Parameters.AddWithValue("UserName", login.Email.ToLower());
                     command.Parameters.AddWithValue("Password", login.Password);
                     connection.Open();
                     //SqlDataReader reader = command.ExecuteReader();

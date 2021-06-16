@@ -71,7 +71,7 @@ namespace BookStoreBackEnd.Controllers
                     return this.Ok(new { Status = true, Message = " Book updated Successfully", Data = response.Result });
                 }
 
-                return this.BadRequest(new { Status = false, Message = "Book updated Added", Data = response.Result });
+                return this.BadRequest(new { Status = false, Message = "Book updated", Data = response.Result });
             }
             catch (Exception e)
             {

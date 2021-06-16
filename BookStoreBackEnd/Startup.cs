@@ -1,5 +1,7 @@
 ﻿using BookStoreManager.Admin;
+using BookStoreManager.User;
 using BookStoreRepository.Admin;
+using BookStoreRepository.User;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -32,6 +34,8 @@ namespace BookStoreBackEnd
         {
             services.AddTransient<IAdminManager, AdminManager>();
             services.AddTransient<IAdminRepo, AdminRepo>();
+            services.AddTransient<IUserManager, UserManager>();
+            services.AddTransient<IUserRepo, UserRepo>();
             services.AddCors(o => o.AddPolicy("CorsPolicy", builder =>
             {
                 builder
