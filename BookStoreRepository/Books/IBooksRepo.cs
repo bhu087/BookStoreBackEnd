@@ -15,5 +15,7 @@ namespace BookStoreRepository.Books
         Task<int> AddToCart(int AccountID, int BookID);
         Task<int> AddToWishList(int AccountID, int BookID);
         Task<IEnumerable<CartDetails>> PlaceOrder(int AccountID);
+        Task<int> WishToCart(int AccountID, int BookID);
+        Task<IEnumerable<Book>> SortBooks(string sortOrder);
     }
 }

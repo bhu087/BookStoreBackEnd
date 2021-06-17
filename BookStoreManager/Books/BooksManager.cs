@@ -80,11 +80,35 @@ namespace BookStoreManager.Books
             }
         }
 
+        public Task<IEnumerable<Book>> SortBooks(string sortOrder)
+        {
+            try
+            {
+                return this.repo.SortBooks(sortOrder);
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
         public Task<Book> UpdateBook(Book book)
         {
             try
             {
                 return this.repo.UpdateBook(book);
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
+        public Task<int> WishToCart(int AccountID, int BookID)
+        {
+            try
+            {
+                return this.repo.WishToCart(AccountID,BookID);
             }
             catch
             {

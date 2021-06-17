@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Text;
@@ -138,11 +140,14 @@ namespace BookStoreRepository.Books
                     SqlDataReader reader = command.ExecuteReader();
                     while (reader.Read())
                     {
-                        Book book = new Book();
-                        book.BookID = (Int32)reader["BookID"];
-                        book.BookName = reader["BookName"].ToString();
-                        book.Description = reader["BookDescription"].ToString();
-                        book.Quantity = (Int32)reader["Quantity"];
+                        Book book = new Book
+                        {
+                            BookID = (int)reader["BookID"],
+                            BookName = reader["BookName"].ToString(),
+                            Description = reader["Description"].ToString(),
+                            Quantity = (int)reader["Quantity"],
+                            Price = (int)reader["Price"]
+                        };
                         bookList.Add(book);
                     }
                     connection.Close();
@@ -291,6 +296,38 @@ namespace BookStoreRepository.Books
             }
         }
 
+
+        public async Task<int> WishToCart(int AccountID, int BookID)
+        {
+            string conn = config["ConnectionString"];
+            SqlConnection connection = new SqlConnection(conn);
+            try
+            {
+                using (SqlCommand command = new SqlCommand("spWishToCart", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("AccountID", AccountID);
+                    command.Parameters.AddWithValue("BookID", BookID);
+                    connection.Open();
+                    int reader = await Task.Run(() => command.ExecuteNonQuery());
+                    if (reader == 1)
+                    {
+                        connection.Close();
+                        return reader;
+                    }
+                    connection.Close();
+                    return reader;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception();
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
         public int UpdateQuantity(IEnumerable<CartDetails> cartDetails)
         {
             string conn = config["ConnectionString"];
@@ -323,20 +360,27 @@ namespace BookStoreRepository.Books
         }
 
 
-        //public async Task<int> SortBooks(string sortOrder)
-        //{
-        //    //string conn = config["ConnectionString"];
-        //    //SqlConnection connection = new SqlConnection(conn);
-        //    try
-        //    {
-        //        IEnumerable<Book> booksList = this.GetAllBooks().Result;
-        //        booksList.GetEnumerator.sortOrder
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        throw new Exception();
-        //    }
-        //}
+        public async Task<IEnumerable<Book>> SortBooks(string sortOrder)
+        {
+            IEnumerable<Book> sortedBooks;
+            try
+            {
+                IEnumerable<Book> booksList = this.GetAllBooks().Result;
+                if (sortOrder.Equals("LowToHigh"))
+                {
+                    sortedBooks = booksList.OrderBy(c => c.Price);
+                }
+                else
+                {
+                    sortedBooks = booksList.OrderByDescending(c => c.Price);
+                }
+                return await Task.Run(() => sortedBooks);
+            }
+            catch (Exception e)
+            {
+                throw new Exception();
+            }
+        }
 
         public MessageQueue MsmqService()
         {
@@ -404,7 +448,7 @@ namespace BookStoreRepository.Books
                 var msg = this.messageQueue.EndReceive(e.AsyncResult);
                 var emailDetails = (EmailDetails)msg.Body;
                 this.SendMail(emailDetails.Subject, emailDetails.Body);
-                using (StreamWriter file = new StreamWriter(@"I:\Utility\Fundoo.txt", true))
+                using (StreamWriter file = new StreamWriter(@"I:\Utility\BookStore.txt", true))
                 {
                     file.WriteLine(emailDetails.Subject);
                 }

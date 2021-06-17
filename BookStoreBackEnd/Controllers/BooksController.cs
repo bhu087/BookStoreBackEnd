@@ -104,7 +104,7 @@ namespace BookStoreBackEnd.Controllers
         }
 
         [Authorize(Roles = "User")]
-        [HttpGet]
+        [HttpPut]
         [Route("addToCart")]
         public ActionResult AddToCart(int AccountID, int BookID)
         {
@@ -125,7 +125,7 @@ namespace BookStoreBackEnd.Controllers
         }
 
         [Authorize(Roles = "User")]
-        [HttpGet]
+        [HttpPut]
         [Route("addToWishList")]
         public ActionResult AddToWishList(int AccountID, int BookID)
         {
@@ -146,6 +146,27 @@ namespace BookStoreBackEnd.Controllers
         }
 
         [Authorize(Roles = "User")]
+        [HttpPut]
+        [Route("addWishToCart")]
+        public ActionResult WishToCart(int AccountID, int BookID)
+        {
+            try
+            {
+                Task<int> response = this.manager.WishToCart(AccountID, BookID);
+                if (response.Result == 1)
+                {
+                    return this.Ok(new { Status = true, Message = "Book added to Cart", Data = response.Result });
+                }
+
+                return this.BadRequest(new { Status = false, Message = "Book not added to Cart", Data = response.Result });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
+            }
+        }
+
+        [Authorize(Roles = "User")]
         [HttpPost]
         [Route("placeOrder")]
         public ActionResult PlaceOrder(int AccountID)
@@ -154,6 +175,28 @@ namespace BookStoreBackEnd.Controllers
             {
                 Task<IEnumerable<CartDetails>> response = this.manager.PlaceOrder(AccountID);
                 
+                if (response.Result != null)
+                {
+                    return this.Ok(new { Status = true, Message = "order placed Successfully", Data = response.Result });
+                }
+
+                return this.BadRequest(new { Status = false, Message = "Order not placed", Data = response.Result });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
+            }
+        }
+
+        [Authorize(Roles ="User")]
+        [HttpGet]
+        [Route("orderByPrice")]
+        public ActionResult SortBooks(string AccountID)
+        {
+            try
+            {
+                Task<IEnumerable<Book>> response = this.manager.SortBooks(AccountID);
+
                 if (response.Result != null)
                 {
                     return this.Ok(new { Status = true, Message = "order placed Successfully", Data = response.Result });
