@@ -67,6 +67,19 @@ namespace BookStoreManager.Books
                 throw new Exception();
             }
         }
+
+        public Task<IEnumerable<Book>> PlaceOrder(int AccountID)
+        {
+            try
+            {
+                return this.repo.PlaceOrder(AccountID);
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
         public Task<Book> UpdateBook(Book book)
         {
             try

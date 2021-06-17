@@ -145,5 +145,26 @@ namespace BookStoreBackEnd.Controllers
             }
         }
 
+        //[Authorize(Roles = "User")]
+        [HttpPost]
+        [Route("placeOrder")]
+        public ActionResult PlaceOrder(int AccountID)
+        {
+            try
+            {
+                Task<IEnumerable<Book>> response = this.manager.PlaceOrder(AccountID);
+                if (response.Result != null)
+                {
+                    return this.Ok(new { Status = true, Message = "order placed Successfully", Data = response.Result });
+                }
+
+                return this.BadRequest(new { Status = false, Message = "Order not placed", Data = response.Result });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
+            }
+        }
+
     }
 }

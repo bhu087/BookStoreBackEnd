@@ -217,5 +217,61 @@ namespace BookStoreRepository.Books
             }
         }
 
+        public async Task<IEnumerable<Book>> PlaceOrder(int AccountID)
+        {
+            string conn = config["ConnectionString"];
+            SqlConnection connection = new SqlConnection(conn);
+            try
+            {
+                using (SqlCommand command = new SqlCommand("spGetCart", connection))
+                {
+                    List<Book> orderList = new List<Book>();
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("AccountID", AccountID);
+                    connection.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    if (reader != null)
+                    {
+                        while (reader.Read())
+                        {
+                            Book bookDetails = new Book();
+                            bookDetails.BookName = reader["BookName"].ToString();
+                            bookDetails.Author = reader["Author"].ToString();
+                            bookDetails.Price = (int)reader["Price"];
+                            bookDetails.Quantity = (int)reader["Count"];
+                            bookDetails.Price = bookDetails.Price * bookDetails.Quantity;
+                            bookDetails.Description = reader["Address"].ToString();
+                            orderList.Add(bookDetails);
+                        }
+                        return await Task.Run(() => orderList);
+                    }
+                    return null;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception();
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        //public async Task<int> SortBooks(string sortOrder)
+        //{
+        //    //string conn = config["ConnectionString"];
+        //    //SqlConnection connection = new SqlConnection(conn);
+        //    try
+        //    {
+        //        IEnumerable<Book> booksList = this.GetAllBooks().Result;
+        //        booksList.GetEnumerator.sortOrder
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        throw new Exception();
+        //    }
+        //}
+
     }
 }

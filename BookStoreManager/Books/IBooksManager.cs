@@ -14,5 +14,6 @@ namespace BookStoreManager.Books
         Task<IEnumerable<Book>> GetAllBooks();
         Task<int> AddToCart(int AccountID, int BookID);
         Task<int> AddToWishList(int AccountID, int BookID);
+        Task<IEnumerable<Book>> PlaceOrder(int AccountID);
     }
 }
