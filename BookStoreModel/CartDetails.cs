@@ -8,6 +8,8 @@ namespace BookStoreModel
     {
         public int BookID { get; set; }
         public int CartID { get; set; }
+        public int TotalPrice { get; set; }
+        public string Email { get; set; }
         public string BookName { get; set; }
         public string Author { get; set; }
         public int Price { get; set; }

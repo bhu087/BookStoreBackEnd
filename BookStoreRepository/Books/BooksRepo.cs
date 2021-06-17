@@ -1,9 +1,12 @@
 ﻿using BookStoreModel;
+using Experimental.System.Messaging;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Net;
+using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,6 +19,9 @@ namespace BookStoreRepository.Books
         {
             this.config = configuration;
         }
+
+        private MessageQueue messageQueue = new MessageQueue();
+
         public async Task<Book> AddNewBook(Book book)
         {
             string conn = config["ConnectionString"];
@@ -238,22 +244,37 @@ namespace BookStoreRepository.Books
                             {
                                 BookID = (int)reader["BookID"],
                                 CartID = (int)reader["CartID"],
+                                Email = reader["Email"].ToString(),
                                 BookName = reader["BookName"].ToString(),
                                 Author = reader["Author"].ToString(),
                                 Description = reader["Description"].ToString(),
                                 Price = (int)reader["Price"],
                                 Quantity = (int)reader["Count"],
+                                TotalPrice = (int)reader["Price"] * (int)reader["Count"],
                                 Image = reader["Image"].ToString()
                             };
                             if ((int)reader["Quantity"] == 0)
                             {
                                 cartDetails.Quantity = 0;
                             }
-                            cartDetails.Price *= cartDetails.Quantity;
                             orderList.Add(cartDetails);
                         }
                         if (this.UpdateQuantity(orderList) == 1)
                         {
+                            string subject = "Order Details";
+                            string body = string.Empty;
+                            string email = string.Empty;
+                            foreach (var orders in orderList)
+                            {
+                                email = orders.Email;
+                                body = "Book Name: " + orders.BookName
+                                    + "\nBook Author: "+ orders.Author
+                                    + "\nBook Price: "+ orders.Price
+                                    + ("\nTotal Price: (Rs.{0}*{1}) = {2}\n\n",
+                                    orders.Price, orders.Quantity, orders.TotalPrice);
+                            }
+                            this.MsmqService();
+                            this.AddToQueue(email, subject, body);
                             return await Task.Run(() => orderList);
                         }
                     }
@@ -301,6 +322,7 @@ namespace BookStoreRepository.Books
             }
         }
 
+
         //public async Task<int> SortBooks(string sortOrder)
         //{
         //    //string conn = config["ConnectionString"];
@@ -316,5 +338,83 @@ namespace BookStoreRepository.Books
         //    }
         //}
 
+        public MessageQueue MsmqService()
+        {
+            string queuePath = @".\private$\BookStoreQueue";
+            if (MessageQueue.Exists(queuePath))
+            {
+                this.messageQueue = new MessageQueue(queuePath);
+                return this.messageQueue;
+            }
+            else
+            {
+                this.messageQueue = MessageQueue.Create(queuePath);
+                return this.messageQueue;
+            }
+        }
+        public void SendMail(string subject, string body)
+        {
+            try
+            {
+                string accountEmail = this.config["NetworkCredentials:AccountEmail"];
+                string accountPass = this.config["NetworkCredentials:AccountPass"];
+                MailMessage mail = new MailMessage();
+                mail.To.Add("bhu087@gmail.com");
+                mail.From = new MailAddress("bhush097@gmail.com");
+                mail.Subject = subject;
+                mail.Body = body;
+                mail.IsBodyHtml = false;
+                SmtpClient smtp = new SmtpClient
+                {
+                    Host = "smtp.gmail.com",
+                    Port = 587,
+                    EnableSsl = true,
+                    Credentials = new NetworkCredential(accountEmail, accountPass)
+                };
+                smtp.Send(mail);
+            }
+            catch (Exception e)
+            {
+                throw new Exception();
+            }
+        }
+        public void AddToQueue(string email, string subject, string body)
+        {
+            EmailDetails emailDetails = new EmailDetails
+            {
+                Email = email,
+                Subject = subject,
+                Body = body
+            };
+            this.messageQueue.Formatter = new XmlMessageFormatter(new Type[] { typeof(EmailDetails) });
+
+            this.messageQueue.ReceiveCompleted += this.ReceiveFromQueue;
+
+            this.messageQueue.Send(emailDetails);
+
+            this.messageQueue.BeginReceive();
+
+            this.messageQueue.Close();
+        }
+
+        public void ReceiveFromQueue(object sender, ReceiveCompletedEventArgs e)
+        {
+            try
+            {
+                var msg = this.messageQueue.EndReceive(e.AsyncResult);
+                var emailDetails = (EmailDetails)msg.Body;
+                this.SendMail(emailDetails.Subject, emailDetails.Body);
+                using (StreamWriter file = new StreamWriter(@"I:\Utility\Fundoo.txt", true))
+                {
+                    file.WriteLine(emailDetails.Subject);
+                }
+
+                this.messageQueue.BeginReceive();
+            }
+            catch (MessageQueueException qexception)
+            {
+                Console.WriteLine(qexception);
+            }
+        }
     }
 }
