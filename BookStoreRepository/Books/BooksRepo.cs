@@ -217,7 +217,7 @@ namespace BookStoreRepository.Books
             }
         }
 
-        public async Task<IEnumerable<Book>> PlaceOrder(int AccountID)
+        public async Task<IEnumerable<CartDetails>> PlaceOrder(int AccountID)
         {
             string conn = config["ConnectionString"];
             SqlConnection connection = new SqlConnection(conn);
@@ -225,7 +225,7 @@ namespace BookStoreRepository.Books
             {
                 using (SqlCommand command = new SqlCommand("spGetCart", connection))
                 {
-                    List<Book> orderList = new List<Book>();
+                    List<CartDetails> orderList = new List<CartDetails>();
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue("AccountID", AccountID);
                     connection.Open();
@@ -234,16 +234,28 @@ namespace BookStoreRepository.Books
                     {
                         while (reader.Read())
                         {
-                            Book bookDetails = new Book();
-                            bookDetails.BookName = reader["BookName"].ToString();
-                            bookDetails.Author = reader["Author"].ToString();
-                            bookDetails.Price = (int)reader["Price"];
-                            bookDetails.Quantity = (int)reader["Count"];
-                            bookDetails.Price = bookDetails.Price * bookDetails.Quantity;
-                            bookDetails.Description = reader["Address"].ToString();
-                            orderList.Add(bookDetails);
+                            CartDetails cartDetails = new CartDetails
+                            {
+                                BookID = (int)reader["BookID"],
+                                CartID = (int)reader["CartID"],
+                                BookName = reader["BookName"].ToString(),
+                                Author = reader["Author"].ToString(),
+                                Description = reader["Description"].ToString(),
+                                Price = (int)reader["Price"],
+                                Quantity = (int)reader["Count"],
+                                Image = reader["Image"].ToString()
+                            };
+                            if ((int)reader["Quantity"] == 0)
+                            {
+                                cartDetails.Quantity = 0;
+                            }
+                            cartDetails.Price *= cartDetails.Quantity;
+                            orderList.Add(cartDetails);
                         }
-                        return await Task.Run(() => orderList);
+                        if (this.UpdateQuantity(orderList) == 1)
+                        {
+                            return await Task.Run(() => orderList);
+                        }
                     }
                     return null;
                 }
@@ -251,6 +263,37 @@ namespace BookStoreRepository.Books
             catch (Exception e)
             {
                 throw new Exception();
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        public int UpdateQuantity(IEnumerable<CartDetails> cartDetails)
+        {
+            string conn = config["ConnectionString"];
+            SqlConnection connection = new SqlConnection(conn);
+            try
+            {
+                foreach(var a in cartDetails)
+                {
+                    using (SqlCommand command = new SqlCommand("spUpdateBooksQuantity", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.AddWithValue("BookID", a.BookID);
+                        command.Parameters.AddWithValue("Count", a.Quantity);
+                        command.Parameters.AddWithValue("CartID", a.CartID);
+                        connection.Open();
+                        command.ExecuteNonQuery();
+                        connection.Close();
+                    }
+                }
+                return 1;
+            }
+            catch
+            {
+                return 0;
             }
             finally
             {
