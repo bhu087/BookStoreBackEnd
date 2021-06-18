@@ -23,10 +23,14 @@ namespace BookStoreRepository.Books
         }
 
         private MessageQueue messageQueue = new MessageQueue();
+        public string ConnectionString()
+        {
+            return config["ConnectionString"];
+        }
 
         public async Task<Book> AddNewBook(Book book)
         {
-            string conn = config["ConnectionString"];
+            string conn = this.ConnectionString();
             SqlConnection connection = new SqlConnection(conn);
             try
             {
@@ -62,7 +66,7 @@ namespace BookStoreRepository.Books
 
         public async Task<Book> UpdateBook(Book book)
         {
-            string conn = config["ConnectionString"];
+            string conn = this.ConnectionString();
             SqlConnection connection = new SqlConnection(conn);
             try
             {
@@ -96,7 +100,7 @@ namespace BookStoreRepository.Books
 
         public async Task<string> DeleteBook(int bookID)
         {
-            string conn = config["ConnectionString"];
+            string conn = this.ConnectionString();
             SqlConnection connection = new SqlConnection(conn);
             try
             {
@@ -128,7 +132,7 @@ namespace BookStoreRepository.Books
 
         public async Task<IEnumerable<Book>> GetAllBooks()
         {
-            string conn = config["ConnectionString"];
+            string conn = this.ConnectionString();
             List<Book> bookList = new List<Book>();
             SqlConnection connection = new SqlConnection(conn);
             try
@@ -166,7 +170,7 @@ namespace BookStoreRepository.Books
 
         public async Task<int> AddToCart(int AccountID, int BookID)
         {
-            string conn = config["ConnectionString"];
+            string conn = this.ConnectionString();
             SqlConnection connection = new SqlConnection(conn);
             try
             {
@@ -198,7 +202,7 @@ namespace BookStoreRepository.Books
 
         public async Task<int> AddToWishList(int AccountID, int BookID)
         {
-            string conn = config["ConnectionString"];
+            string conn = this.ConnectionString();
             SqlConnection connection = new SqlConnection(conn);
             try
             {
@@ -230,7 +234,7 @@ namespace BookStoreRepository.Books
 
         public async Task<IEnumerable<CartDetails>> PlaceOrder(int AccountID)
         {
-            string conn = config["ConnectionString"];
+            string conn = this.ConnectionString();
             SqlConnection connection = new SqlConnection(conn);
             try
             {
@@ -299,7 +303,7 @@ namespace BookStoreRepository.Books
 
         public async Task<int> WishToCart(int AccountID, int BookID)
         {
-            string conn = config["ConnectionString"];
+            string conn = this.ConnectionString();
             SqlConnection connection = new SqlConnection(conn);
             try
             {
@@ -330,7 +334,7 @@ namespace BookStoreRepository.Books
         }
         public int UpdateQuantity(IEnumerable<CartDetails> cartDetails)
         {
-            string conn = config["ConnectionString"];
+            string conn = this.ConnectionString();
             SqlConnection connection = new SqlConnection(conn);
             try
             {

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -106,11 +107,12 @@ namespace BookStoreBackEnd.Controllers
         [Authorize(Roles = "User")]
         [HttpPut]
         [Route("addToCart")]
-        public ActionResult AddToCart(int AccountID, int BookID)
+        public ActionResult AddToCart(int BookID)
         {
+            int userID = this.GetUserID();   
             try
             {
-                Task<int> response = this.manager.AddToCart(AccountID, BookID);
+                Task<int> response = this.manager.AddToCart(userID, BookID);
                 if (response.Result == 1)
                 {
                     return this.Ok(new { Status = true, Message = "Book added to Cart", Data = response.Result });
@@ -127,11 +129,12 @@ namespace BookStoreBackEnd.Controllers
         [Authorize(Roles = "User")]
         [HttpPut]
         [Route("addToWishList")]
-        public ActionResult AddToWishList(int AccountID, int BookID)
+        public ActionResult AddToWishList(int BookID)
         {
+            int userID = this.GetUserID();
             try
             {
-                Task<int> response = this.manager.AddToWishList(AccountID, BookID);
+                Task<int> response = this.manager.AddToWishList(userID, BookID);
                 if (response.Result == 1)
                 {
                     return this.Ok(new { Status = true, Message = "Book added to wish List", Data = response.Result });
@@ -148,11 +151,12 @@ namespace BookStoreBackEnd.Controllers
         [Authorize(Roles = "User")]
         [HttpPut]
         [Route("addWishToCart")]
-        public ActionResult WishToCart(int AccountID, int BookID)
+        public ActionResult WishToCart(int BookID)
         {
+            int userID = this.GetUserID();
             try
             {
-                Task<int> response = this.manager.WishToCart(AccountID, BookID);
+                Task<int> response = this.manager.WishToCart(userID, BookID);
                 if (response.Result == 1)
                 {
                     return this.Ok(new { Status = true, Message = "Book added to Cart", Data = response.Result });
@@ -169,11 +173,12 @@ namespace BookStoreBackEnd.Controllers
         [Authorize(Roles = "User")]
         [HttpPost]
         [Route("placeOrder")]
-        public ActionResult PlaceOrder(int AccountID)
+        public ActionResult PlaceOrder()
         {
+            int userID = this.GetUserID();
             try
             {
-                Task<IEnumerable<CartDetails>> response = this.manager.PlaceOrder(AccountID);
+                Task<IEnumerable<CartDetails>> response = this.manager.PlaceOrder(userID);
                 
                 if (response.Result != null)
                 {
@@ -191,11 +196,11 @@ namespace BookStoreBackEnd.Controllers
         [Authorize(Roles ="User")]
         [HttpGet]
         [Route("orderByPrice")]
-        public ActionResult SortBooks(string AccountID)
+        public ActionResult SortBooks(string sortingOrder)
         {
             try
             {
-                Task<IEnumerable<Book>> response = this.manager.SortBooks(AccountID);
+                Task<IEnumerable<Book>> response = this.manager.SortBooks(sortingOrder);
 
                 if (response.Result != null)
                 {
@@ -209,6 +214,16 @@ namespace BookStoreBackEnd.Controllers
                 return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
             }
         }
-
+        private int GetUserID()
+        {
+            var token = HttpContext.Request?.Headers["Authorization"];
+            string tokenString = token.ToString();
+            string[] tokenArray = tokenString.Split(" ");
+            var handler = new JwtSecurityTokenHandler();
+            var jsonToken = handler.ReadToken(tokenArray[1]);
+            var tokenS = jsonToken as JwtSecurityToken;
+            int userID = int.Parse(tokenS.Claims.First(claim => claim.Type == "Id").Value);
+            return userID;
+        }
     }
 }

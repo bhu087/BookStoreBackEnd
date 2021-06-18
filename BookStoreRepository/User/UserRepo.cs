@@ -31,10 +31,15 @@ namespace BookStoreRepository.User
                     command.Parameters.AddWithValue("Email", login.Email.ToLower());
                     command.Parameters.AddWithValue("Password", login.Password);
                     connection.Open();
-                    int res = (Int32)command.ExecuteScalar();
-                    if (res == 1)
+                    SqlDataReader reader = command.ExecuteReader();
+                    if (reader != null)
                     {
-                        string jwt = this.GenerateJWTtokens(login.Email);
+                        string jwt = string.Empty;
+                        while (reader.Read())
+                        {
+                            int Id = (int)reader["AccountID"];
+                            jwt = this.GenerateJWTtokens(login.Email, Id);
+                        }
                         connection.Close();
                         return await Task.Run(() => jwt);
                     }
@@ -88,7 +93,69 @@ namespace BookStoreRepository.User
             }
         }
 
-        public string GenerateJWTtokens(string auserEmail)
+        public async Task<IEnumerable<string>> GetAllAddress(int userID)
+        {
+            string conn = config["ConnectionString"];
+            List<string> addressList = new List<string>();
+            SqlConnection connection = new SqlConnection(conn);
+            try
+            {
+                using (SqlCommand command = new SqlCommand("spGetAddress", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("AccountID", userID);
+                    connection.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    while(reader.Read())
+                    {
+                        string address = reader["Address"].ToString();
+                        addressList.Add(address);
+                    }
+                    connection.Close();
+                    if (addressList.Count == 0)
+                    {
+                        return null;
+                    }
+                    return await Task.Run(() => addressList);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception();
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        public async Task<int> AddNewAddress(int userID, string address)
+        {
+            string conn = config["ConnectionString"];
+            SqlConnection connection = new SqlConnection(conn);
+            try
+            {
+                using (SqlCommand command = new SqlCommand("spAddNewAddress", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("AccountID", userID);
+                    command.Parameters.AddWithValue("Address", address);
+                    connection.Open();
+                    int result = command.ExecuteNonQuery();
+                    return await Task.Run(() => result);
+                }
+            }
+            catch
+            {
+                throw new Exception();
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        public string GenerateJWTtokens(string userEmail, int Id)
         {
             string key = this.config["Jwt:Key"];
             try
@@ -98,7 +165,8 @@ namespace BookStoreRepository.User
                     Subject = new ClaimsIdentity(new Claim[]
                         {
                             new Claim(ClaimTypes.Role, "User"),
-                            new Claim("Email", auserEmail)
+                            new Claim("Email", userEmail),
+                            new Claim("Id", Id.ToString())
                         }),
                     Expires = DateTime.Now.AddDays(Convert.ToDouble(this.config["Jwt:JwtExpireDays"])),
                     SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)), SecurityAlgorithms.HmacSha256Signature)

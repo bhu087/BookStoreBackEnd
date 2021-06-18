@@ -10,5 +10,7 @@ namespace BookStoreRepository.User
     {
         Task<string> Login(Login login);
         Task<UserDetails> AddUser(UserDetails user);
+        Task<IEnumerable<string>> GetAllAddress(int userID);
+        Task<int> AddNewAddress(int userID, string address);
     }
 }

@@ -15,11 +15,35 @@ namespace BookStoreManager.User
             this.repo = userRepo;
         }
 
+        public Task<int> AddNewAddress(int userID, string address)
+        {
+            try
+            {
+                return this.repo.AddNewAddress(userID, address);
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
         public Task<UserDetails> AddUser(UserDetails user)
         {
             try 
             {
                 return this.repo.AddUser(user);
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
+        public Task<IEnumerable<string>> GetAllAddress(int userID)
+        {
+            try
+            {
+                return this.repo.GetAllAddress(userID);
             }
             catch
             {
