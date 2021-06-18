@@ -20,6 +20,30 @@ namespace BookStoreManager.Books
             return this.repo.AddNewBook(book);
         }
 
+        public Task<int> AddToCart(int AccountID, int BookID)
+        {
+            try
+            {
+                return this.repo.AddToCart(AccountID, BookID);
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
+        public Task<int> AddToWishList(int AccountID, int BookID)
+        {
+            try
+            {
+                return this.repo.AddToWishList(AccountID, BookID);
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
         public Task<string> DeleteBook(int bookID)
         {
             try
@@ -43,11 +67,48 @@ namespace BookStoreManager.Books
                 throw new Exception();
             }
         }
+
+        public Task<IEnumerable<CartDetails>> PlaceOrder(int AccountID)
+        {
+            try
+            {
+                return this.repo.PlaceOrder(AccountID);
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
+        public Task<IEnumerable<Book>> SortBooks(string sortOrder)
+        {
+            try
+            {
+                return this.repo.SortBooks(sortOrder);
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
         public Task<Book> UpdateBook(Book book)
         {
             try
             {
                 return this.repo.UpdateBook(book);
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
+        public Task<int> WishToCart(int AccountID, int BookID)
+        {
+            try
+            {
+                return this.repo.WishToCart(AccountID,BookID);
             }
             catch
             {

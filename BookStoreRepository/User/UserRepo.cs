@@ -25,16 +25,21 @@ namespace BookStoreRepository.User
             SqlConnection connection = new SqlConnection(conn);
             try
             {
-                using (SqlCommand command = new SqlCommand("spUserLogin", connection))
+                using (SqlCommand command = new SqlCommand("spLogin", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("UserName", login.Email.ToLower());
+                    command.Parameters.AddWithValue("Email", login.Email.ToLower());
                     command.Parameters.AddWithValue("Password", login.Password);
                     connection.Open();
-                    int res = (Int32)command.ExecuteScalar();
-                    if (res == 1)
+                    SqlDataReader reader = command.ExecuteReader();
+                    if (reader != null)
                     {
-                        string jwt = this.GenerateJWTtokens(login.Email);
+                        string jwt = string.Empty;
+                        while (reader.Read())
+                        {
+                            int Id = (int)reader["AccountID"];
+                            jwt = this.GenerateJWTtokens(login.Email, Id);
+                        }
                         connection.Close();
                         return await Task.Run(() => jwt);
                     }
@@ -52,7 +57,79 @@ namespace BookStoreRepository.User
             }
         }
 
-        public string GenerateJWTtokens(string auserEmail)
+        public async Task<UserDetails> AddUser(UserDetails user)
+        {
+            string conn = config["ConnectionString"];
+            SqlConnection connection = new SqlConnection(conn);
+            try
+            {
+                using (SqlCommand command = new SqlCommand("spAddUser", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("Name", user.Name);
+                    command.Parameters.AddWithValue("Email", user.Email);
+                    command.Parameters.AddWithValue("Mobile", user.Mobile);
+                    command.Parameters.AddWithValue("Password", user.Password);
+                    command.Parameters.AddWithValue("Address", user.Address);
+                    command.Parameters.AddWithValue("HolderState", 1);
+                    connection.Open();
+                    int res = (Int32)command.ExecuteScalar();
+                    if (res == 1)
+                    {
+                        connection.Close();
+                        return await Task.Run(() => user);
+                    }
+                    connection.Close();
+                    return null;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception();
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        public async Task<IEnumerable<string>> GetAllAddress(int userID)
+        {
+            string conn = config["ConnectionString"];
+            List<string> addressList = new List<string>();
+            SqlConnection connection = new SqlConnection(conn);
+            try
+            {
+                using (SqlCommand command = new SqlCommand("spGetAddress", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("AccountID", userID);
+                    connection.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    while(reader.Read())
+                    {
+                        string address = reader["Address"].ToString();
+                        addressList.Add(address);
+                    }
+                    connection.Close();
+                    if (addressList.Count == 0)
+                    {
+                        return null;
+                    }
+                    return await Task.Run(() => addressList);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception();
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        public string GenerateJWTtokens(string userEmail, int Id)
         {
             string key = this.config["Jwt:Key"];
             try
@@ -62,7 +139,8 @@ namespace BookStoreRepository.User
                     Subject = new ClaimsIdentity(new Claim[]
                         {
                             new Claim(ClaimTypes.Role, "User"),
-                            new Claim("Email", auserEmail)
+                            new Claim("Email", userEmail),
+                            new Claim("Id", Id.ToString())
                         }),
                     Expires = DateTime.Now.AddDays(Convert.ToDouble(this.config["Jwt:JwtExpireDays"])),
                     SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)), SecurityAlgorithms.HmacSha256Signature)

@@ -9,5 +9,7 @@ namespace BookStoreManager.User
     public interface IUserManager
     {
         Task<string> Login(Login login);
+        Task<UserDetails> AddUser(UserDetails user);
+        Task<IEnumerable<string>> GetAllAddress(int AccountID);
     }
 }

@@ -1,25 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace BookStoreModel
 {
-    public class Book
+    public class CartDetails
     {
-        [Required]
         public int BookID { get; set; }
-        [Required]
+        public int CartID { get; set; }
+        public int TotalPrice { get; set; }
+        public string Email { get; set; }
         public string BookName { get; set; }
-        [Required]
         public string Author { get; set; }
-        [Required]
         public int Price { get; set; }
-        [Required]
         public string Description { get; set; }
-        [Required]
         public int Quantity { get; set; }
-        [Required]
         public string Image { get; set; }
     }
 }
