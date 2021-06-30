@@ -7,7 +7,6 @@ namespace BookStoreModel
 {
     public class UserDetails
     {
-        [Required]
         public int AccountId { get; set; }
         [Required]
         public string Name { get; set; }
@@ -17,9 +16,6 @@ namespace BookStoreModel
         public string Mobile { get; set; }
         [Required]
         public string Password { get; set; }
-        [Required]
-        public string Address { get; set; }
-        [Required]
         public int HolderState { get; set; }
     }
 }

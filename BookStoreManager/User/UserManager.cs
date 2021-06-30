@@ -51,6 +51,18 @@ namespace BookStoreManager.User
             }
         }
 
+        public Task<UserDetails> GetUser(int userID)
+        {
+            try
+            {
+                return this.repo.GetUser(userID);
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
         public Task<string> Login(Login login)
         {
             try

@@ -56,6 +56,18 @@ namespace BookStoreManager.Books
             }
         }
 
+        public Task<int> DecreaseFromCart(int AccountID, int BookID)
+        {
+            try
+            {
+                return this.repo.DecreaseFromCart(AccountID, BookID);
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
         public Task<IEnumerable<Book>> GetAllBooks()
         {
             try
@@ -68,7 +80,31 @@ namespace BookStoreManager.Books
             }
         }
 
-        public Task<IEnumerable<CartDetails>> PlaceOrder(int AccountID)
+        public Task<IEnumerable<CartDetails>> GetCart(int AccountID)
+        {
+            try
+            {
+                return this.repo.GetCart(AccountID);
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
+        public Task<IEnumerable<Book>> GetCartHistory(int userID)
+        {
+            try
+            {
+                return this.repo.GetCartHistory(userID);
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
+        public Task<string> PlaceOrder(int AccountID)
         {
             try
             {
@@ -109,6 +145,42 @@ namespace BookStoreManager.Books
             try
             {
                 return this.repo.WishToCart(AccountID,BookID);
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
+        public Task<int> DeleteFromCart(int AccountID, int BookID)
+        {
+            try
+            {
+                return this.repo.DeleteFromCart(AccountID, BookID);
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
+        public Task<IEnumerable<CartDetails>> GetWishList(int AccountID)
+        {
+            try
+            {
+                return this.repo.GetWishList(AccountID);
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
+        public Task<int> DeleteFromWishlist(int AccountID, int BookID)
+        {
+            try
+            {
+                return this.repo.DeleteFromWishlist(AccountID, BookID);
             }
             catch
             {

@@ -105,14 +105,36 @@ namespace BookStoreBackEnd.Controllers
         }
 
         [Authorize(Roles = "User")]
+        [HttpGet]
+        [Route("getOrderHistory")]
+        public ActionResult GetCartHistory()
+        {
+            try
+            {
+                int userID = this.GetUserID();
+                Task<IEnumerable<Book>> response = this.manager.GetCartHistory(userID);
+                if (response.Result != null)
+                {
+                    return this.Ok(new { Status = true, Message = "Cart History", Data = response.Result });
+                }
+
+                return this.BadRequest(new { Status = false, Message = "No History available", Data = response.Result });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
+            }
+        }
+
+        [Authorize(Roles = "User")]
         [HttpPut]
-        [Route("addToCart")]
-        public ActionResult AddToCart(int BookID)
+        [Route("addToCart/{bookID}")]
+        public ActionResult AddToCart(int bookID)
         {
             int userID = this.GetUserID();   
             try
             {
-                Task<int> response = this.manager.AddToCart(userID, BookID);
+                Task<int> response = this.manager.AddToCart(userID, bookID);
                 if (response.Result == 1)
                 {
                     return this.Ok(new { Status = true, Message = "Book added to Cart", Data = response.Result });
@@ -128,13 +150,79 @@ namespace BookStoreBackEnd.Controllers
 
         [Authorize(Roles = "User")]
         [HttpPut]
-        [Route("addToWishList")]
-        public ActionResult AddToWishList(int BookID)
+        [Route("decreaseFromCart/{bookID}")]
+        public ActionResult DecreaseFromCart(int bookID)
         {
             int userID = this.GetUserID();
             try
             {
-                Task<int> response = this.manager.AddToWishList(userID, BookID);
+                Task<int> response = this.manager.DecreaseFromCart(userID, bookID);
+                if (response.Result == 1)
+                {
+                    return this.Ok(new { Status = true, Message = "Book count decreased by 1", Data = response.Result });
+                }
+
+                return this.BadRequest(new { Status = false, Message = "Book not available in cart", Data = response.Result });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
+            }
+        }
+
+        [Authorize(Roles = "User")]
+        [HttpPut]
+        [Route("deleteFromCart/{bookID}")]
+        public ActionResult DeleteFromCart(int bookID)
+        {
+            int userID = this.GetUserID();
+            try
+            {
+                Task<int> response = this.manager.DeleteFromCart(userID, bookID);
+                if (response.Result == 1)
+                {
+                    return this.Ok(new { Status = true, Message = "Book delete from cart", Data = response.Result });
+                }
+
+                return this.BadRequest(new { Status = false, Message = "Book not available in cart", Data = response.Result });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
+            }
+        }
+
+        [Authorize(Roles = "User")]
+        [HttpDelete]
+        [Route("deleteFromWishlist/{bookID}")]
+        public ActionResult DeleteFromWishlist(int bookID)
+        {
+            int userID = this.GetUserID();
+            try
+            {
+                Task<int> response = this.manager.DeleteFromCart(userID, bookID);
+                if (response.Result == 1)
+                {
+                    return this.Ok(new { Status = true, Message = "Book delete from wishlist", Data = response.Result });
+                }
+
+                return this.BadRequest(new { Status = false, Message = "Book not available in wishlist", Data = response.Result });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
+            }
+        }
+
+        [Authorize(Roles = "User")]
+        [HttpPut]
+        [Route("addToWishList/{bookID}")]
+        public ActionResult AddToWishList(int bookID)
+        {
+            int userID = this.GetUserID();
+            try
+            {
+                Task<int> response = this.manager.AddToWishList(userID, bookID);
                 if (response.Result == 1)
                 {
                     return this.Ok(new { Status = true, Message = "Book added to wish List", Data = response.Result });
@@ -150,13 +238,13 @@ namespace BookStoreBackEnd.Controllers
 
         [Authorize(Roles = "User")]
         [HttpPut]
-        [Route("addWishToCart")]
-        public ActionResult WishToCart(int BookID)
+        [Route("addWishToCart/{bookID}")]
+        public ActionResult WishToCart(int bookID)
         {
             int userID = this.GetUserID();
             try
             {
-                Task<int> response = this.manager.WishToCart(userID, BookID);
+                Task<int> response = this.manager.WishToCart(userID, bookID);
                 if (response.Result == 1)
                 {
                     return this.Ok(new { Status = true, Message = "Book added to Cart", Data = response.Result });
@@ -178,7 +266,7 @@ namespace BookStoreBackEnd.Controllers
             int userID = this.GetUserID();
             try
             {
-                Task<IEnumerable<CartDetails>> response = this.manager.PlaceOrder(userID);
+                Task<string> response = this.manager.PlaceOrder(userID);
                 
                 if (response.Result != null)
                 {
@@ -193,9 +281,53 @@ namespace BookStoreBackEnd.Controllers
             }
         }
 
+        [Authorize(Roles = "User")]
+        [HttpGet]
+        [Route("getCart")]
+        public ActionResult GetCart()
+        {
+            int userID = this.GetUserID();
+            try
+            {
+                Task<IEnumerable<CartDetails>> response = this.manager.GetCart(userID);
+
+                if (response.Result != null)
+                {
+                    return this.Ok(new { Status = true, Message = "Your Cart", Data = response.Result });
+                }
+
+                return this.Ok(new { Status = true, Message = "Your cart is empty", Data = response.Result });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
+            }
+        }
         [Authorize(Roles ="User")]
         [HttpGet]
-        [Route("orderByPrice")]
+        [Route("getWishList")]
+        public ActionResult GetWishList()
+        {
+            int userID = this.GetUserID();
+            try
+            {
+                Task<IEnumerable<CartDetails>> response = this.manager.GetWishList(userID);
+
+                if (response.Result != null)
+                {
+                    return this.Ok(new { Status = true, Message = "Your Cart", Data = response.Result });
+                }
+
+                return this.Ok(new { Status = true, Message = "Your cart is empty", Data = response.Result });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
+            }
+        }
+
+        [HttpGet]
+        [Route("orderByPrice/{sortingOrder}")]
         public ActionResult SortBooks(string sortingOrder)
         {
             try

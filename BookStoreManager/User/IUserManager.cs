@@ -12,5 +12,6 @@ namespace BookStoreManager.User
         Task<UserDetails> AddUser(UserDetails user);
         Task<IEnumerable<string>> GetAllAddress(int AccountID);
         Task<int> AddNewAddress(int userID, string address);
+        Task<UserDetails> GetUser(int userID);
     }
 }

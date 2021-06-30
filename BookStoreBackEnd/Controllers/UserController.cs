@@ -21,7 +21,7 @@ namespace BookStoreBackEnd.Controllers
         }
 
         [HttpPost]
-        [Route("userLogin")]
+        [Route("login")]
         public ActionResult Login(Login login)
         {
             try
@@ -60,8 +60,8 @@ namespace BookStoreBackEnd.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("addAddress")]
+        [HttpPut]
+        [Route("addAddress/{address}")]
         public ActionResult AddNewAddress(string address)
         {
             int userID = this.GetUserID();
@@ -69,6 +69,28 @@ namespace BookStoreBackEnd.Controllers
             {
                 Task<int> response = this.manager.AddNewAddress(userID, address);
                 if (response.Result != 0)
+                {
+                    return this.Ok(new { Status = true, Message = "Address Added Successfully", Data = response.Result });
+                }
+
+                return this.BadRequest(new { Status = false, Message = "Address Not added", Data = response.Result });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = false, Message = "Exception", Data = e });
+            }
+        }
+
+        [Authorize(Roles = "User")]
+        [HttpGet]
+        [Route("getUser")]
+        public ActionResult GetUser()
+        {
+            int userID = this.GetUserID();
+            try
+            {
+                Task<UserDetails> response = this.manager.GetUser(userID);
+                if (response.Result != null)
                 {
                     return this.Ok(new { Status = true, Message = "Address Added Successfully", Data = response.Result });
                 }

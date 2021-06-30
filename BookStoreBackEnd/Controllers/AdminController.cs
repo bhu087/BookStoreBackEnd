@@ -22,7 +22,7 @@ namespace BookStoreBackEnd.Controllers
         }
 
         [HttpPost]
-        [Route("adminlogin")]
+        [Route("login")]
         public ActionResult Login(Login login)
         {
             try

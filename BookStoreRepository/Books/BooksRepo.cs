@@ -37,7 +37,7 @@ namespace BookStoreRepository.Books
                 using (SqlCommand command = new SqlCommand("spAddNewBook", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("Name", book.BookName);
+                    command.Parameters.AddWithValue("BookName", book.BookName);
                     command.Parameters.AddWithValue("Author", book.Author);
                     command.Parameters.AddWithValue("Price", book.Price);
                     command.Parameters.AddWithValue("Description", book.Description);
@@ -147,10 +147,12 @@ namespace BookStoreRepository.Books
                         Book book = new Book
                         {
                             BookID = (int)reader["BookID"],
+                            Author = reader["Author"].ToString(),
                             BookName = reader["BookName"].ToString(),
                             Description = reader["Description"].ToString(),
                             Quantity = (int)reader["Quantity"],
-                            Price = (int)reader["Price"]
+                            Price = (int)reader["Price"],
+                            Image = reader["Image"].ToString()
                         };
                         bookList.Add(book);
                     }
@@ -175,6 +177,102 @@ namespace BookStoreRepository.Books
             try
             {
                 using (SqlCommand command = new SqlCommand("spAddToCart", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("AccountID", AccountID);
+                    command.Parameters.AddWithValue("BookID", BookID);
+                    connection.Open();
+                    int reader = await Task.Run(() => command.ExecuteNonQuery());
+                    if (reader == 1)
+                    {
+                        connection.Close();
+                        return reader;
+                    }
+                    connection.Close();
+                    return reader;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception();
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        public async Task<int> DecreaseFromCart(int AccountID, int BookID)
+        {
+            string conn = this.ConnectionString();
+            SqlConnection connection = new SqlConnection(conn);
+            try
+            {
+                using (SqlCommand command = new SqlCommand("decreaseFromCart", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("AccountID", AccountID);
+                    command.Parameters.AddWithValue("BookID", BookID);
+                    connection.Open();
+                    int reader = await Task.Run(() => command.ExecuteNonQuery());
+                    if (reader == 1)
+                    {
+                        connection.Close();
+                        return reader;
+                    }
+                    connection.Close();
+                    return reader;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception();
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        public async Task<int> DeleteFromCart(int AccountID, int BookID)
+        {
+            string conn = this.ConnectionString();
+            SqlConnection connection = new SqlConnection(conn);
+            try
+            {
+                using (SqlCommand command = new SqlCommand("spDeleteFromCart", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("AccountID", AccountID);
+                    command.Parameters.AddWithValue("BookID", BookID);
+                    connection.Open();
+                    int reader = await Task.Run(() => command.ExecuteNonQuery());
+                    if (reader == 1)
+                    {
+                        connection.Close();
+                        return reader;
+                    }
+                    connection.Close();
+                    return reader;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception();
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        public async Task<int> DeleteFromWishlist(int AccountID, int BookID)
+        {
+            string conn = this.ConnectionString();
+            SqlConnection connection = new SqlConnection(conn);
+            try
+            {
+                using (SqlCommand command = new SqlCommand("spDeleteFromWishlist", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue("AccountID", AccountID);
@@ -232,9 +330,10 @@ namespace BookStoreRepository.Books
             }
         }
 
-        public async Task<IEnumerable<CartDetails>> PlaceOrder(int AccountID)
+        public async Task<string> PlaceOrder(int AccountID)
         {
             string conn = this.ConnectionString();
+            string orderID = string.Empty;
             SqlConnection connection = new SqlConnection(conn);
             try
             {
@@ -270,27 +369,32 @@ namespace BookStoreRepository.Books
                         }
                         if (this.UpdateQuantity(orderList) == 1)
                         {
+                            orderID = "#Order" + AccountID + orderList.First().BookID + orderList.Last().BookID;
+                            this.SaveToCartHistory(orderList, AccountID, orderID);
                             string subject = "Order Details";
                             string body = string.Empty;
                             string email = string.Empty;
+                            int grandTotal = 0;
                             foreach (var orders in orderList)
                             {
                                 email = orders.Email;
-                                body = "Book Name: " + orders.BookName
+                                body += "Book Name: " + orders.BookName
                                     + "\nBook Author: "+ orders.Author
                                     + "\nBook Price: "+ orders.Price
-                                    + ("\nTotal Price: (Rs.{0}*{1}) = {2}\n\n",
-                                    orders.Price, orders.Quantity, orders.TotalPrice);
+                                    + "\nTotal Price: (Rs." + orders.Price +"*" + orders.Quantity + 
+                                    ") = " + orders.TotalPrice +"\n---------------------------------\n";
+                                grandTotal += orders.TotalPrice;
                             }
+                            body += "Grand Amount = " + grandTotal;
                             this.MsmqService();
                             this.AddToQueue(email, subject, body);
-                            return await Task.Run(() => orderList);
+                            return await Task.Run(() => orderID);
                         }
                     }
                     return null;
                 }
             }
-            catch (Exception e)
+            catch
             {
                 throw new Exception();
             }
@@ -300,6 +404,106 @@ namespace BookStoreRepository.Books
             }
         }
 
+
+        public async Task<IEnumerable<CartDetails>> GetCart(int AccountID)
+        {
+            string conn = this.ConnectionString();
+            SqlConnection connection = new SqlConnection(conn);
+            try
+            {
+                using (SqlCommand command = new SqlCommand("spGetCart", connection))
+                {
+                    List<CartDetails> orderList = new List<CartDetails>();
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("AccountID", AccountID);
+                    connection.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    if (reader != null)
+                    {
+                        while (reader.Read())
+                        {
+                            CartDetails cartDetails = new CartDetails
+                            {
+                                BookID = (int)reader["BookID"],
+                                CartID = (int)reader["CartID"],
+                                Email = reader["Email"].ToString(),
+                                BookName = reader["BookName"].ToString(),
+                                Author = reader["Author"].ToString(),
+                                Description = reader["Description"].ToString(),
+                                Price = (int)reader["Price"],
+                                Quantity = (int)reader["Count"],
+                                TotalPrice = (int)reader["Price"] * (int)reader["Count"],
+                                Image = reader["Image"].ToString()
+                            };
+                            orderList.Add(cartDetails);
+                        }
+                        if (orderList.Count() > 0)
+                        {
+                            return await Task.Run(() => orderList);
+                        }
+                    }
+                    return null;
+                }
+            }
+            catch
+            {
+                throw new Exception();
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        public async Task<IEnumerable<CartDetails>> GetWishList(int AccountID)
+        {
+            string conn = this.ConnectionString();
+            SqlConnection connection = new SqlConnection(conn);
+            try
+            {
+                using (SqlCommand command = new SqlCommand("spGetWishList", connection))
+                {
+                    List<CartDetails> orderList = new List<CartDetails>();
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("AccountID", AccountID);
+                    connection.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    if (reader != null)
+                    {
+                        while (reader.Read())
+                        {
+                            CartDetails cartDetails = new CartDetails
+                            {
+                                BookID = (int)reader["BookID"],
+                                CartID = (int)reader["CartID"],
+                                Email = reader["Email"].ToString(),
+                                BookName = reader["BookName"].ToString(),
+                                Author = reader["Author"].ToString(),
+                                Description = reader["Description"].ToString(),
+                                Price = (int)reader["Price"],
+                                Quantity = (int)reader["Count"],
+                                TotalPrice = (int)reader["Price"] * (int)reader["Count"],
+                                Image = reader["Image"].ToString()
+                            };
+                            orderList.Add(cartDetails);
+                        }
+                        if (orderList.Count() > 0)
+                        {
+                            return await Task.Run(() => orderList);
+                        }
+                    }
+                    return null;
+                }
+            }
+            catch
+            {
+                throw new Exception();
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
 
         public async Task<int> WishToCart(int AccountID, int BookID)
         {
@@ -366,7 +570,7 @@ namespace BookStoreRepository.Books
 
         public async Task<IEnumerable<Book>> SortBooks(string sortOrder)
         {
-            IEnumerable<Book> sortedBooks;
+            IEnumerable<Book> sortedBooks = this.GetAllBooks().Result;
             try
             {
                 IEnumerable<Book> booksList = this.GetAllBooks().Result;
@@ -374,7 +578,7 @@ namespace BookStoreRepository.Books
                 {
                     sortedBooks = booksList.OrderBy(c => c.Price);
                 }
-                else
+                if(sortOrder.Equals("HighToLow"))
                 {
                     sortedBooks = booksList.OrderByDescending(c => c.Price);
                 }
@@ -383,6 +587,80 @@ namespace BookStoreRepository.Books
             catch (Exception e)
             {
                 throw new Exception();
+            }
+        }
+
+        public void SaveToCartHistory(IEnumerable<CartDetails> cartDetails, int accountID, string orderID)
+        {
+            string conn = this.ConnectionString();
+            SqlConnection connection = new SqlConnection(conn);
+            try
+            {
+                SqlCommand command = new SqlCommand("spAddToHistory", connection);
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.Add("@AccountID", SqlDbType.Int);
+                command.Parameters.Add("@BookID", SqlDbType.Int);
+                command.Parameters.Add("@Price", SqlDbType.Int);
+                command.Parameters.Add("@Quantity", SqlDbType.Int);
+                command.Parameters.Add("@OrderID", SqlDbType.VarChar);
+                connection.Open();
+                foreach (var book in cartDetails)
+                 {
+                    command.Parameters[0].Value = accountID;
+                    command.Parameters[1].Value = book.BookID;
+                    command.Parameters[2].Value = book.Price;
+                    command.Parameters[3].Value = book.Quantity;
+                    command.Parameters[4].Value = orderID;
+                    command.ExecuteNonQuery();
+                }
+                connection.Close();
+            }
+            catch (Exception e)
+            {
+                throw new Exception();
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        public async Task<IEnumerable<Book>> GetCartHistory(int userID)
+        {
+            string conn = this.ConnectionString();
+            List<Book> oederHistroy = new List<Book>();
+            SqlConnection connection = new SqlConnection(conn);
+            try
+            {
+                using (SqlCommand command = new SqlCommand("spGetCartHistory", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("AccountID", userID);
+                    connection.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        Book book = new Book
+                        {
+                            BookID = (int)reader["BookID"],
+                            BookName = reader["BookName"].ToString(),
+                            Description = reader["Description"].ToString(),
+                            Quantity = (int)reader["Quantity"],
+                            Price = (int)reader["Price"]
+                        };
+                        oederHistroy.Add(book);
+                    }
+                    connection.Close();
+                    return await Task.Run(() => oederHistroy);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception();
+            }
+            finally
+            {
+                connection.Close();
             }
         }
 
@@ -426,6 +704,7 @@ namespace BookStoreRepository.Books
                 throw new Exception();
             }
         }
+
         public void AddToQueue(string email, string subject, string body)
         {
             EmailDetails emailDetails = new EmailDetails

@@ -70,7 +70,6 @@ namespace BookStoreRepository.User
                     command.Parameters.AddWithValue("Email", user.Email);
                     command.Parameters.AddWithValue("Mobile", user.Mobile);
                     command.Parameters.AddWithValue("Password", user.Password);
-                    command.Parameters.AddWithValue("Address", user.Address);
                     command.Parameters.AddWithValue("HolderState", 1);
                     connection.Open();
                     int res = (Int32)command.ExecuteScalar();
@@ -78,6 +77,43 @@ namespace BookStoreRepository.User
                     {
                         connection.Close();
                         return await Task.Run(() => user);
+                    }
+                    connection.Close();
+                    return null;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception();
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        public async Task<UserDetails> GetUser(int userID)
+        {
+            string conn = config["ConnectionString"];
+            SqlConnection connection = new SqlConnection(conn);
+            try
+            {
+                using (SqlCommand command = new SqlCommand("spGetUser", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("AccountID", userID);
+                    UserDetails userDetails = new UserDetails();
+                    connection.Open();
+                    var res = command.ExecuteReader();
+                    if (res != null)
+                    {
+                        while (res.Read())
+                        {
+                            userDetails.AccountId = (int)res["AccountID"];
+                            userDetails.Name = res["Name"].ToString();
+                        }
+                        connection.Close();
+                        return await Task.Run(() => userDetails);
                     }
                     connection.Close();
                     return null;
